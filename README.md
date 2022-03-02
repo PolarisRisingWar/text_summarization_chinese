@@ -1,6 +1,6 @@
 本项目致力于整合各文本摘要模型，将其转为中文文本数据可以直接运行的形式。
 
-本Markdown文件只保证VSCode上MPE插件的浏览效果，因此在其他Markdown渲染工具上效果可能交叉。
+本Markdown文件只保证VSCode上MPE插件的浏览效果，因此在其他Markdown渲染工具上效果可能较差。
 
 [TOC]
 
