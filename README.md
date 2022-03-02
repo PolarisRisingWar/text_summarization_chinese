@@ -44,6 +44,7 @@
 - [x] 有监督抽取式摘要：TransformerSum-extractive
 - [ ] 有监督生成式摘要：Pointer-Generator Network
 - [ ] 有监督生成式摘要：TransformerSum-abstractive
+- [ ] 有监督生成式摘要：transformers-pipeline（仅支持推理）
 
 数据预处理：
 - [ ] 改进原始数据格式（增加对数据过大造成需要拆分到多个文件中、文本含有换行符等特殊符号的情况的支持）

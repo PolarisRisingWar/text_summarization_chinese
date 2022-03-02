@@ -21,10 +21,12 @@ for split in ['train','val','test']:
 
     for sample_index in range(len(split_src)):  #遍历所有样本
         output_json={}
-        sentence_list=split_src[sample_index].split('</sentence>')[:-1]
+        sentence_list=split_src[sample_index].strip().split('</sentence>')
+        if len(sentence_list[-1])==0:
+            sentence_list=sentence_list[:-1]
         output_json['src']=[list(x) for x in sentence_list]
         if split=='test':
-            output_json['tgt']=split_tgt[sample_index].replace('</sentence>','<q>')[:-4]
+            output_json['tgt']=split_tgt[sample_index].strip().replace('</sentence>','<q>')[:-3]
         sentence_length=len(sentence_list)
         sentence_label=[0 for _ in range(sentence_length)]
         for i in split_label[sample_index]:
