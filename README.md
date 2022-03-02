@@ -31,7 +31,7 @@
 1. `text_summarization_chinese/preproess_data/calculate_average_train_tgt_sentences_num.py`：计算`train.tgt`的摘要平均句长，以作为抽取式摘要输出句长的参考
 # 4. 结果评估
 未来计划增加使用rouge等评估指标来评估运行结果的功能。目前只有输出结果。
-# 5. 工作计划及项目日志
+# 5. 工作计划
 增加模型：
 - [x] 无监督抽取式摘要：LEAD-3
 - [x] 无监督抽取式摘要：TextRank
@@ -44,7 +44,8 @@
 - [x] 有监督抽取式摘要：TransformerSum-extractive
 - [ ] 有监督生成式摘要：Pointer-Generator Network
 - [ ] 有监督生成式摘要：TransformerSum-abstractive
-- [ ] 有监督生成式摘要：transformers-pipeline（仅支持推理）
+- [x] 有监督生成式摘要：transformers-pipeline（仅支持推理）
+- [ ] 在各模型的README文件内介绍模型原理
 
 数据预处理：
 - [ ] 改进原始数据格式（增加对数据过大造成需要拆分到多个文件中、文本含有换行符等特殊符号的情况的支持）
@@ -52,9 +53,12 @@
 - [ ] 增加示例样本
 - [ ] 增加自动分词和分句功能
 - [ ] 增加preprocess_data文件夹的README文件
+- [ ] 增加使用抽取式摘要标签数量来计算抽取式摘要任务应该抽取多少句话的参考值的代码
 
 模型评估：
 - [ ] 增加rouge和分类的评估方式
+
+- [ ] 根据GitHub对Markdown的支持，优化文档排版
 
 # 6. 本项目所使用的、未在各模型独立文件夹中提及的其他参考资料
 1. 抽取式模型整合网站：[Extractive Text Summarization | Papers With Code](https://paperswithcode.com/task/extractive-document-summarization)
