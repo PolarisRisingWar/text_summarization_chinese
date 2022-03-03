@@ -1,9 +1,9 @@
 # TransformerSum - extractive
 
-首先调用`convert_data_format.py`将本项目采用的原始数据转换为TransformerSum可用的格式（这里有两条注意事项：1. 由于测试部分不知道为什么会出现bug，有些batch里面没有target键，所以测试部分实际上不可用。因此测试部分的代码需要另外跑，不能直接用TransformerSum的`main.py`的代码。跑测试部分的代码见后文。2. 我在代码中分词直接以char为单位进行分割了，我没看懂TransformerSum自带的tokenizer部分代码，如果是直接以这个分词单位进行tokenize的话其实是不合适的，具体为什么不合适此处略，总之不合适。但是也不算大错。总之不合适。transformers包是支持直接输入整句文本的，感觉用这个更合适些，以后我自己改写代码了就改成用直接输入的方式。）。
-`convert_data_format.py`入参：
-`--dataset_folder_path`&emsp;&emsp;含有train/val/test src/tgt/label文件的文件夹路径。
-`--output_folder_path`&emsp;&emsp;处理后的数据输出文件夹。将在该文件夹下储存dataset_name.train/val/test.0.json（3个文件）。
+首先调用`convert_data_format.py`将本项目采用的原始数据转换为TransformerSum可用的格式（这里有两条注意事项：1. 由于测试部分不知道为什么会出现bug，有些batch里面没有target键，所以测试部分实际上不可用。因此测试部分的代码需要另外跑，不能直接用TransformerSum的`main.py`的代码。跑测试部分的代码见后文。2. 我在代码中分词直接以char为单位进行分割了，我没看懂TransformerSum自带的tokenizer部分代码，如果是直接以这个分词单位进行tokenize的话其实是不合适的，具体为什么不合适此处略，总之不合适。但是也不算大错。总之不合适。transformers包是支持直接输入整句文本的，感觉用这个更合适些，以后我自己改写代码了就改成用直接输入的方式。）。  
+`convert_data_format.py`入参：  
+`--dataset_folder_path`&emsp;&emsp;含有train/val/test src/tgt/label文件的文件夹路径。  
+`--output_folder_path`&emsp;&emsp;处理后的数据输出文件夹。将在该文件夹下储存dataset_name.train/val/test.0.json（3个文件）。  
 `--dataset_name`&emsp;&emsp;数据输出文件使用的名称。
 
 然后调用TransformerSum的`main.py`代码进行训练操作，可参考的运行代码为：
@@ -21,7 +21,7 @@ python main.py --data_path dataset_folder_path --weights_save_path mypath/weight
 
 其他参数请参考TransformerSum的文档（[Training an Extractive Summarization Model — TransformerSum 1.0.0 documentation](https://transformersum.readthedocs.io/en/latest/extractive/training.html)）
 
-运行结束后在`weights_save_path`下可以找到checkpoint，在TransformerSum的src文件夹下新建Python文件，运行测试代码。（需要注意两点，1. 需要将TransformerSum的`extractive.py`的第1095行`" ".join([token.text for token in sentence if str(token) != "."]) + "."`改成`" ".join([token for token in sentence])`。2. 原始TransformerSum代码没有限制摘要句子按顺序输出，这一点我已经给作者提了issue：[Suggest about the index order of extractive results · Issue #68 · HHousen/TransformerSum](https://github.com/HHousen/TransformerSum/issues/68)，如果作者听的话后期可能会直接改，如果没改的话直接参考我在issue里提出的解决方式即可）
+运行结束后在`weights_save_path`下可以找到checkpoint，在TransformerSum的src文件夹下新建Python文件，运行测试代码。（需要注意两点，1. 需要将TransformerSum的`extractive.py`的第1095行`" ".join([token.text for token in sentence if str(token) != "."]) + "."`改成`" ".join([token for token in sentence])`。2. 原始TransformerSum代码没有限制摘要句子按顺序输出，这一点我已经给作者提了issue：[Suggest about the index order of extractive results · Issue #68 · HHousen/TransformerSum](https://github.com/HHousen/TransformerSum/issues/68)，如果作者听的话后期可能会直接改，如果没改的话直接参考我在issue里提出的解决方式即可）  
 可以参考的写法为：
 ```python
 import argparse
@@ -49,10 +49,10 @@ for t in tqdm(texts):
     result_file.write(predicted_summary.replace(' ','')+'\n')
 result_file.close()
 ```
-对参数的介绍：
-`--file_path`&emsp;&emsp;需要被摘要的test.src文件路径。
-`--result_path`&emsp;&emsp;预测摘要输出路径（是一个需要直接可写入的文本文件）
-`--checkpoint_path`&emsp;&emsp;checkpoint路径。
+对参数的介绍：  
+`--file_path`&emsp;&emsp;需要被摘要的test.src文件路径。  
+`--result_path`&emsp;&emsp;预测摘要输出路径（是一个需要直接可写入的文本文件）  
+`--checkpoint_path`&emsp;&emsp;checkpoint路径。  
 `--num_summary_sentences`&emsp;&emsp;测试输出句长，可以通过`text_summarization_chinese/preproess_data/calculate_average_train_tgt_sentences_num.py`计算训练集摘要平均句长来作为选值参考
 
 工作计划和项目日志：
