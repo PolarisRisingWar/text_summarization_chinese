@@ -21,7 +21,7 @@ python main.py --data_path dataset_folder_path --weights_save_path mypath/weight
 
 其他参数请参考TransformerSum的文档（[Training an Extractive Summarization Model — TransformerSum 1.0.0 documentation](https://transformersum.readthedocs.io/en/latest/extractive/training.html)）
 
-运行结束后在`weights_save_path`下可以找到checkpoint，在TransformerSum的src文件夹下新建Python文件，运行测试代码。（需要注意两点，1. 需要将TransformerSum的`extractive.py`的第1095行`" ".join([token.text for token in sentence if str(token) != "."]) + "."`改成`" ".join([token for token in sentence])`。2. 原始TransformerSum代码没有限制摘要句子按顺序输出，这一点我已经给作者提了issue：[Suggest about the index order of extractive results · Issue #68 · HHousen/TransformerSum](https://github.com/HHousen/TransformerSum/issues/68)，如果作者听的话后期可能会直接改，如果没改的话直接参考我在issue里提出的解决方式即可）  
+运行结束后在`weights_save_path`下可以找到checkpoint，在TransformerSum的src文件夹下新建Python文件，运行测试代码。（需要注意两点，1. 需要将TransformerSum的`extractive.py`的第1095行`" ".join([token.text for token in sentence if str(token) != "."]) + "."`改成`" ".join([token for token in sentence])`。2. ~~原始TransformerSum代码没有限制摘要句子按顺序输出，这一点我已经给作者提了issue：[Suggest about the index order of extractive results · Issue #68 · HHousen/TransformerSum](https://github.com/HHousen/TransformerSum/issues/68)，如果作者听的话后期可能会直接改，如果没改的话直接参考我在issue里提出的解决方式即可~~这一问题已在更新后的TransformerSum项目中被解决，不用再考虑了。可参考：[Sort 'selected_ids' (Fixes #68) · HHousen/TransformerSum@15bd11d](https://github.com/HHousen/TransformerSum/commit/15bd11d3532ae2bd43f6b8aca2198483df701460)）  
 可以参考的写法为：
 ```python
 import argparse
