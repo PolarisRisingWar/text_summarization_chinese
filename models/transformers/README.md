@@ -5,6 +5,7 @@
 
 我直接调用transformers的Trainer，所以会自动调用所有GPU。可以在Python命令行前添加`CUDA_VISIBLE_DEVICES=3`以设置GPU  
 可以在Python命令行前添加`WANDB_MODE=offline`以使wandb不要同步
+（另外我还加了个`TOKENIZERS_PARALLELISM=false`，参考https://stackoverflow.com/questions/62691279/how-to-disable-tokenizers-parallelism-true-false-warning）
 
 作者在自己测试代码的过程中，发现可以直接实现运行的模型有：
 - <https://huggingface.co/fnlp/bart-base-chinese>
