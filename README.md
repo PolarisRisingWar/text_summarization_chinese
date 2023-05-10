@@ -25,14 +25,13 @@
 （在2023.5.10修改过一次，所以在此之前的模型可能不可用）
 本项目需要的原始数据格式为：  
 （暂时不支持非UTF-8编码格式的文本）  
-所有数据按照训练集（train）、验证集（val）、测试集（test）进行划分，3个文件都以jsonl为后缀。
-如果提前已经做好分词在数据集划分名称后加`_tok`。  
-分词好的格式为以空格隔开每个token文本（因此不支持含空格的文本）。  
-抽取式标签后缀`.label`，仅支持通过`json.dump`保存的list。如果提前做好分句，可以在原文中用`</sentence>`token作为标识。在抽取式摘要中会使用该标识，在生成式摘要中会自动去掉该标识（以后会提供支持原文中自带`</sentence>`文本的功能）。
+所有数据按照训练集（train）、验证集（valid）、测试集（test）进行划分，3个文件都以jsonl为后缀，每一行是一个用`json.dumps()`储存的JSON对象，元素依次是src（未分割的原文）、tokenized_src（经过分词/分句后的原文）、tgt（未分割的摘要）、tokenized_tgt（经过分词/分句后的摘要）  
+分词/句后的对象：①不存在该键 ②仅分词/仅分句→字符串列表 ③分词且分句→nested list，词组成句，句组成文档  
 
-使用文件夹名（数据集名）来调取数据。在每个模型的README文件里会写所需的文件名
+使用文件夹路径来调取数据
 
-除label文件（抽取式摘要标签）外的数据示例文件已在[lcsts_example](./datasets_example/lcsts_example)中给出，为LCSTS数据集各数据集划分的前100条样本。
+（以下内容还没更新）
+除label文件（抽取式摘要标签）外的数据示例文件已在[datasets_example](./datasets_example)中给出，提供每个数据集各划分的前100条样本。
 
 其他辅助功能：
 1. `text_summarization_chinese/preproess_data/calculate_average_train_tgt_sentences_num.py`：计算`train.tgt`的摘要平均句长，以作为抽取式摘要输出句长的参考
@@ -56,8 +55,8 @@
 - [ ] 有监督抽取式摘要：BanditSum
 - [ ] 有监督生成式摘要：Pointer-Generator Network
 - [ ] 有监督生成式摘要：UniLM
-- [×] 有监督生成式摘要：CPT
-- [ ] 工具包：transformers
+- [x] 有监督生成式摘要：CPT
+- [x] 工具包：transformers
 - [ ] 工具包：TransformerSum
 - [ ] 工具包：bert4keras
 - [ ] 工具包：bert_seq2seq
@@ -80,6 +79,7 @@
 
 其他：
 - [x] 根据GitHub对Markdown的支持，优化文档排版
+- [ ] 模型的各种可复现性相关的问题
 
 # 6. 本项目所使用的、未在各模型独立文件夹中提及的其他参考资料
 1. 抽取式模型整合网站：[Extractive Text Summarization | Papers With Code](https://paperswithcode.com/task/extractive-document-summarization)
