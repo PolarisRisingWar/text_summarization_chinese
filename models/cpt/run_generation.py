@@ -4,8 +4,13 @@
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--dataset_folder_path",default='datasets_example/lcsts_example',type=str)  #数据储存路径
-parser.add_argument("--result_folder_path",default='/data/cpt_output',type=str)  #储存结果的文件夹
+parser.add_argument("--dataset_folder_path",default='/data/wanghuijuan/other_data/tsc_data/lcsts',type=str)
+#数据储存路径
+
+parser.add_argument("--result_folder_path",default='/data/wanghuijuan/cpt_output/tsc_cpt_output',type=str)
+#储存结果的文件夹。要求这个文件夹必须存在（因为还没写不存在setting的代码）
+
+parser.add_argument("--pretrained_model_path",default='/data/wanghuijuan/pretrained_model/cpt-large',type=str)
 
 args = parser.parse_args()
 arg_dict=args.__dict__
@@ -27,42 +32,29 @@ from transformers.trainer_utils import is_main_process
 from datasets import Dataset
 
 # Part 1: 数据集
-extracted_result=open('').readlines()
-
-tuiliguocheng_dict=eval(open('').read())
-
-total_data=[json.loads(x) for x in extracted_result]
-data_original=[]
-data_destination=[]
-for d in total_data:
-    if d['money']['type']=='qita':
-        data_original.append('诉讼请求：'+d['ask']+'  事实描述文本：'+' '.join(d['money']['rationale']))
-        susong_id=d['susong_id']
-        data_destination.append('推理过程：'+tuiliguocheng_dict[susong_id]+' 最终结果：'+str(d['money']['amount']))
-
-datasets_indexes=random_split_dataset(list(range(len(data_original))),split_ratio,random_seed)
-
-def convert2Dataset(indexes):
+def convert2Dataset(split_name):
+    """将数据集转换为datasets.Dataset的格式"""
     results={'summarization':[],'article':[]}
-    for sample_index in indexes:
-        results['summarization'].append(data_destination[sample_index])
-        results['article'].append(data_original[sample_index])
+    original_data=open(os.path.join(arg_dict['dataset_folder_path'],split_name+'.jsonl')).readlines()[:100]
+    for sample in original_data:
+        sample_jsoned=json.loads(sample)
+        results['summarization'].append(sample_jsoned['tgt'].strip())
+        results['article'].append(sample_jsoned['src'].strip())
     return Dataset.from_dict(results)
 
 datasets={}
-datasets['train']=convert2Dataset(datasets_indexes[0])
-datasets['validation']=convert2Dataset(datasets_indexes[1])
-datasets['test']=convert2Dataset(datasets_indexes[2])
+datasets['train']=convert2Dataset('train')
+datasets['validation']=convert2Dataset('valid')
+datasets['test']=convert2Dataset('test')
 
 # Part 2: 其他设置
-outdir=''
+outdir=arg_dict['result_folder_path']
+model_path=arg_dict['pretrained_model_path']
 
 # Part 3: 建模
-model_path=""
-
 tokenizer=BertTokenizer.from_pretrained(model_path)
 model=CPTForConditionalGeneration.from_pretrained(model_path)
-target_length=580
+target_length=512
 source_length=1024
 model.config.max_length=target_length
 
@@ -89,8 +81,6 @@ def preprocess_function(examples):
 
 
 train_dataset = datasets["train"]
-if "train" not in datasets:
-    raise ValueError("--do_train requires a train dataset")
 train_dataset = train_dataset.map(
     preprocess_function,
     batched=True,
@@ -145,10 +135,6 @@ def postprocess_text(preds, labels):
     preds = [pred.strip() for pred in preds]
     labels = [label.strip() for label in labels]
 
-    # # rougeLSum expects newline after each sentence
-    # preds = ["\n".join(nltk.sent_tokenize(pred)) for pred in preds]
-    # labels = ["\n".join(nltk.sent_tokenize(label)) for label in labels]
-
     while '' in preds:
         idx=preds.index('')
         preds[idx]='。'
@@ -156,6 +142,7 @@ def postprocess_text(preds, labels):
     return preds, labels
 
 def compute_metrics(eval_preds):
+    #注意这里有一点在于，如果预测为空值，是有改进方案的；如果标签为空值没有，如果有标签为空的情况需要另行定义，否则会报ValueError
     preds, labels = eval_preds
     if isinstance(preds, tuple):
         preds = preds[0]
@@ -165,10 +152,6 @@ def compute_metrics(eval_preds):
    
     # Some simple post-processing
     decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
-    for (x,y) in zip(decoded_preds, decoded_labels):
-        print('样本')
-        print(x)
-        print(y)
     scores = rouge.get_scores(decoded_preds, decoded_labels,avg=True)
     for key in scores:
         scores[key]=scores[key]['f']*100
@@ -195,7 +178,7 @@ args=[
     '--per_device_train_batch_size','1',
     '--per_device_eval_batch_size','1',
     '--overwrite_output_dir',
-    '--max_source_length='+str(source_length),  #我记得这个是1024-11来着？
+    '--max_source_length='+str(source_length),
     '--val_max_target_length='+str(target_length),
     '--predict_with_generate=1',
     '--seed',str(20200508),
@@ -204,155 +187,10 @@ args=[
     '--evaluation_strategy','epoch',
     '--learning_rate',str(2e-5),
 ]
-@dataclass
-class ModelArguments:
-    """
-    Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
-    """
 
-    model_name_or_path: str = field(
-        metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
-    )
-    config_name: Optional[str] = field(
-        default=None, metadata={"help": "Pretrained config name or path if not the same as model_name"}
-    )
-    tokenizer_name: Optional[str] = field(
-        default=None, metadata={"help": "Pretrained tokenizer name or path if not the same as model_name"}
-    )
-    cache_dir: Optional[str] = field(
-        default=None,
-        metadata={"help": "Where to store the pretrained models downloaded from huggingface.co"},
-    )
-    use_fast_tokenizer: bool = field(
-        default=True,
-        metadata={"help": "Whether to use one of the fast tokenizer (backed by the tokenizers library) or not."},
-    )
-    model_revision: str = field(
-        default="main",
-        metadata={"help": "The specific model version to use (can be a branch name, tag name or commit id)."},
-    )
-    use_auth_token: bool = field(
-        default=False,
-        metadata={
-            "help": "Will use the token generated when running `transformers-cli login` (necessary to use this script "
-            "with private models)."
-        },
-    )
-
-
-@dataclass
-class DataTrainingArguments:
-    """
-    Arguments pertaining to what data we are going to input our model for training and eval.
-    """
-
-    dataset_name: Optional[str] = field(
-        default=None, metadata={"help": "The name of the dataset to use (via the datasets library)."}
-    )
-    dataset_config_name: Optional[str] = field(
-        default=None, metadata={"help": "The configuration name of the dataset to use (via the datasets library)."}
-    )
-    text_column: Optional[str] = field(
-        default=None,
-        metadata={"help": "The name of the column in the datasets containing the full texts (for summarization)."},
-    )
-    summary_column: Optional[str] = field(
-        default=None,
-        metadata={"help": "The name of the column in the datasets containing the summaries (for summarization)."},
-    )
-    train_file: Optional[str] = field(
-        default=None, metadata={"help": "The input training data file (a jsonlines or csv file)."}
-    )
-    validation_file: Optional[str] = field(
-        default=None,
-        metadata={
-            "help": "An optional input evaluation data file to evaluate the metrics (rouge) on "
-            "(a jsonlines or csv file)."
-        },
-    )
-    test_file: Optional[str] = field(
-        default=None,
-        metadata={
-            "help": "An optional input test data file to evaluate the metrics (rouge) on " "(a jsonlines or csv file)."
-        },
-    )
-    overwrite_cache: bool = field(
-        default=False, metadata={"help": "Overwrite the cached training and evaluation sets"}
-    )
-    preprocessing_num_workers: Optional[int] = field(
-        default=None,
-        metadata={"help": "The number of processes to use for the preprocessing."},
-    )
-    max_source_length: Optional[int] = field(
-        default=1024,
-        metadata={
-            "help": "The maximum total input sequence length after tokenization. Sequences longer "
-            "than this will be truncated, sequences shorter will be padded."
-        },
-    )
-    max_target_length: Optional[int] = field(
-        default=128,
-        metadata={
-            "help": "The maximum total sequence length for target text after tokenization. Sequences longer "
-            "than this will be truncated, sequences shorter will be padded."
-        },
-    )
-    val_max_target_length: Optional[int] = field(
-        default=None,
-        metadata={
-            "help": "The maximum total sequence length for validation target text after tokenization. Sequences longer "
-            "than this will be truncated, sequences shorter will be padded. Will default to `max_target_length`."
-            "This argument is also used to override the ``max_length`` param of ``model.generate``, which is used "
-            "during ``evaluate`` and ``predict``."
-        },
-    )
-    pad_to_max_length: bool = field(
-        default=False,
-        metadata={
-            "help": "Whether to pad all samples to model maximum sentence length. "
-            "If False, will pad the samples dynamically when batching to the maximum length in the batch. More "
-            "efficient on GPU but very bad for TPU."
-        },
-    )
-    max_train_samples: Optional[int] = field(
-        default=None,
-        metadata={
-            "help": "For debugging purposes or quicker training, truncate the number of training examples to this "
-            "value if set."
-        },
-    )
-    max_val_samples: Optional[int] = field(
-        default=None,
-        metadata={
-            "help": "For debugging purposes or quicker training, truncate the number of validation examples to this "
-            "value if set."
-        },
-    )
-    max_test_samples: Optional[int] = field(
-        default=None,
-        metadata={
-            "help": "For debugging purposes or quicker training, truncate the number of test examples to this "
-            "value if set."
-        },
-    )
-    num_beams: Optional[int] = field(
-        default=None,
-        metadata={
-            "help": "Number of beams to use for evaluation. This argument will be passed to ``model.generate``, "
-            "which is used during ``evaluate`` and ``predict``."
-        },
-    )
-    ignore_pad_token_for_loss: bool = field(
-        default=True,
-        metadata={
-            "help": "Whether to ignore the tokens corresponding to padded labels in the loss computation or not."
-        },
-    )
-    source_prefix: Optional[str] = field(
-        default=None, metadata={"help": "A prefix to add before every source text (useful for T5 models)."}
-    )
-parser = HfArgumentParser((ModelArguments, DataTrainingArguments, Seq2SeqTrainingArguments))
-model_args, data_args, training_args = parser.parse_args_into_dataclasses(args)
+training_args = Seq2SeqTrainingArguments(output_dir=outdir,overwrite_output_dir=True,do_train=True,do_eval=True,do_predict=True,
+                                         evaluation_strategy="epoch",per_device_train_batch_size=1,per_device_eval_batch_size=1,learning_rate=2e-5,
+                                         num_train_epochs=8,save_strategy="no",seed=20200508,predict_with_generate=1)
 
 trainer = Seq2SeqTrainer(
     model=model,
@@ -367,19 +205,15 @@ trainer = Seq2SeqTrainer(
 
 
 # Training
-if training_args.do_train:
-    train_result = trainer.train()
-    trainer.save_model()  # Saves the tokenizer too for easy upload
+train_result = trainer.train()
+trainer.save_model()  # Saves the tokenizer too for easy upload
 
-    metrics = train_result.metrics
-    max_train_samples = (
-        data_args.max_train_samples if data_args.max_train_samples is not None else len(train_dataset)
-    )
-    metrics["train_samples"] = min(max_train_samples, len(train_dataset))
+metrics = train_result.metrics
+metrics["train_samples"]=len(train_dataset)
 
-    trainer.log_metrics("train", metrics)
-    trainer.save_metrics("train", metrics)
-    trainer.save_state()
+trainer.log_metrics("train", metrics)
+trainer.save_metrics("train", metrics)
+trainer.save_state()
 
 if trainer.is_world_process_zero():
     if training_args.predict_with_generate:
