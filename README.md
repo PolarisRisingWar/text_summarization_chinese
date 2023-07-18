@@ -86,3 +86,4 @@
 2. 代码中使用到zipfile包的部分参考了如下资料：[3.7Python之解压缩ZIP文件_阿兵-AI医疗的专栏-CSDN博客_python zip解压](https://blog.csdn.net/webzhuce/article/details/79950027)
 3. 代码中使用到os包的部分参考了如下资料：[Python - 调用终端执行命令_Noah1995的博客-CSDN博客_python执行终端命令](https://blog.csdn.net/weixin_42368421/article/details/98625365)；[python3 创建文件夹_python3.2对文件和文件夹操作_weixin_39672680的博客-CSDN博客](https://blog.csdn.net/weixin_39672680/article/details/110284950)；[python3遍历目录查找文件_昆兰.沃斯 的博客-CSDN博客_python3遍历目录查找文件](https://blog.csdn.net/qq_36523839/article/details/72974517)
 4. 代码中使用到raise语句参考了如下资料：[Python3 错误和异常 | 菜鸟教程](https://www.runoob.com/python3/python3-errors-execptions.html)
+5. <https://blog.nghuyong.top/2021/05/24/NLP/chinese-pretrained-seq2seq/>：还准备把这里面的各种模型继续集成到本项目中

@@ -1,4 +1,5 @@
 #代码参考了https://huggingface.co/docs/transformers/tasks/summarization
+#另外还可参考https://blog.csdn.net/daotianweng/article/details/121036353
 
 import argparse
 
@@ -20,13 +21,10 @@ args = parser.parse_args()
 arg_dict=args.__dict__
 
 import json,os
-from dataclasses import dataclass, field
-from typing import Optional
 
 import numpy as np
 
-from transformers import AutoTokenizer,AutoModelForSeq2SeqLM,DataCollatorForSeq2Seq,Seq2SeqTrainingArguments,TrainerCallback,Seq2SeqTrainer,\
-                        HfArgumentParser
+from transformers import AutoTokenizer,AutoModelForSeq2SeqLM,DataCollatorForSeq2Seq,Seq2SeqTrainingArguments,Seq2SeqTrainer
 import evaluate
 
 from datasets import Dataset,DatasetDict

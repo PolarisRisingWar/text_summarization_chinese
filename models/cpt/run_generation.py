@@ -16,18 +16,14 @@ args = parser.parse_args()
 arg_dict=args.__dict__
 
 import json,os
-from dataclasses import dataclass, field
-from typing import Optional
 
 import numpy as np
 
-from torch.utils.data import Dataset,DataLoader
+from torch.utils.data import Dataset
 
 from modeling_cpt import CPTForConditionalGeneration
 
-import transformers
-from transformers import BertTokenizer,DataCollatorForSeq2Seq,Seq2SeqTrainingArguments,TrainerCallback,Seq2SeqTrainer,HfArgumentParser
-from transformers.trainer_utils import is_main_process
+from transformers import BertTokenizer,DataCollatorForSeq2Seq,Seq2SeqTrainingArguments,TrainerCallback,Seq2SeqTrainer
 
 from datasets import Dataset
 
